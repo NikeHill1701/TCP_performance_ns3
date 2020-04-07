@@ -109,15 +109,53 @@ MyApp::ScheduleTx (void)
 int main(int argc, char *argv[]) {
 
 	LogComponentEnable("wiredTCP_Simulation", LOG_LEVEL_INFO);
+// Setup GNU Plot interface
+	
+	std :: string plotTitle1               = "Fairness Index vs Packet Size";
+  	std :: string dataTitle1               = "Fairness Index Data";
 
-// loop over different packet sizes
+  //.........Fairness Plot Setup ........//
+  	std :: string fairnessFile            = "wiredTCPfairness";
+	std :: string fairnessGraphics        = fairnessFile + ".png";
+	std :: string fairnessPlot            = fairnessFile + ".plt";
+
+	Gnuplot plot1 (fairnessGraphics);
+	plot1.SetTitle (plotTitle1);
+	// Make the graphics file, which the plot file will create when it is used with Gnuplot, be a PNG file.
+	plot1.SetTerminal ("png");
+	plot1.SetLegend ("Packet Size", "Fairness Index");
+	plot1.AppendExtra ("set xrange [40:1500]");
+	// Instantiate the dataset, set its title, and make the points be plotted along with connecting lines.
+	Gnuplot2dDataset fairnessDataset;
+	fairnessDataset.SetTitle (dataTitle1);
+  	fairnessDataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
+
+  	std :: string plotTitle2               = "Throughput vs Packet Size";
+  	std :: string dataTitle2               = "Throughput Data";
+
+	std :: string throughputFile           = "wiredTCPthroughput";
+	std :: string throughputGraphics       = throughputFile + ".png";
+	std :: string throughputPlot           = throughputFile + ".plt";
+
+	Gnuplot plot2 (throughputGraphics);
+	plot2.SetTitle (plotTitle2);
+	// Make the graphics file, which the plot file will create when it is used with Gnuplot, be a PNG file.
+	plot2.SetTerminal ("png");
+	plot2.SetLegend ("Packet Size", "Throughput");
+	plot2.AppendExtra ("set xrange [40:1500]");
+	// Instantiate the dataset, set its title, and make the points be plotted along with connecting lines.
+	Gnuplot2dDataset throughputDataset;
+	throughputDataset.SetTitle (dataTitle2);
+	throughputDataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
+
+//TODO:: loop over different packet sizes
 	std::vector<uint32_t> packetSizes = {40, 44, 48, 52, 60, 250, 300, 552, 576, 628, 1420, 1500};
 	uint32_t nPackets = 100;
 
 	for(auto it : packetSizes) {
 		uint32_t packetSize = it;
-// Setup the netdevices
-	// create the nodes
+	// Setup the netdevices
+		// create the nodes
 		Ptr<Node> n2 = CreateObject<Node> ();
 		Ptr<Node> r1 = CreateObject<Node> ();
 		Ptr<Node> r2 = CreateObject<Node> ();
@@ -204,6 +242,8 @@ int main(int argc, char *argv[]) {
 			app->SetStopTime(Seconds(20.0));
 		}
 
+	// Write logic to calculate Throughput
+
 	// Flow monitor to collect stats
 		FlowMonitorHelper flowmonitor;
 	    Ptr<FlowMonitor> monitor = flowmonitor.InstallAll();
@@ -213,7 +253,7 @@ int main(int argc, char *argv[]) {
 	    NS_LOG_INFO("Run Simulation");
 	    Simulator::Stop (Seconds(25.0));
 	    Simulator::Run ();
-    // Write logic to calculate Throughput
+
 	    monitor->CheckForLostPackets();
 	    Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmonitor.GetClassifier ());
 	    std::map<FlowId, FlowMonitor::FlowStats> stats = monitor->GetFlowStats ();
@@ -238,8 +278,29 @@ int main(int argc, char *argv[]) {
     	double FairnessIndex = (Sumx * Sumx)/ (numberofflows * SumSqx) ;
     	std :: cout << "Average Throughput: " << Sumx/numberofflows << " Kbps" << std::endl;
     	std :: cout << "FairnessIndex:	" << FairnessIndex << std :: endl << std::endl;
+    	fairnessDataset.Add (packetSize, FairnessIndex);
     	std :: cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl<< std::endl;
+    	throughputDataset.Add(packetSize,Sumx/numberofflows);
     	Simulator::Destroy ();
     	NS_LOG_INFO ("Done.");
 	}
+
+	plot1.AddDataset (fairnessDataset);
+	// Open the plot file.
+	std :: ofstream plotFile1 (fairnessPlot.c_str());
+	// Write the plot file.
+	plot1.GenerateOutput (plotFile1);
+	// Close the plot file.
+  	plotFile1.close ();
+
+	// Add the dataset to the plot.
+	plot2.AddDataset (throughputDataset);
+	// Open the plot file.
+	std :: ofstream plotFile2 (throughputPlot.c_str());
+	// Write the plot file.
+	plot2.GenerateOutput (plotFile2);
+	// Close the plot file.
+	plotFile2.close ();
+
+	return 0;
 }
