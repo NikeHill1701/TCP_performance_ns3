@@ -8,50 +8,46 @@
 #include "ns3/gnuplot.h"
 #include "ns3/gnuplot-helper.h"
 #include "ns3/netanim-module.h"
-
-NS_LOG_COMPONENT_DEFINE ("Assignment 4 Wireless TCP");
-
 using namespace ns3;
-Ptr<PacketSink> sink;                         /* Pointer to the packet sink application */
-
+NS_LOG_COMPONENT_DEFINE ("Group 14 Assignment 4 Wireless TCP Performance Check");
+Ptr<PacketSink> sink;                         /*packet sink application's pointer */
 int main (int argc, char *argv[])
 {
-  //Set Default TCP congestion algorithm to TCP New Reno
   Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
-
-  std :: string plotTitle1               = "Fairness Index Vs Packet Size";
-  std :: string dataTitle1               = "Fairness Index Data";
+  //Here we have set the default TCP congestion algorithm to TCP New Reno
+  std :: string plotTitle1               = "Plot of TCP Fairness Index against Packet Size";
+  std :: string dataTitle1               = "Index Of Fairness ";
 
   //.........Fairness Plot Setup ........//
-  std :: string fairnessFile            = "wirelessfairness";
-  std :: string fairnessGraphics        = fairnessFile + ".png";
-  std :: string fairnessPlot            = fairnessFile + ".plt";
+  std :: string fairnessFile            = "WirelessFairnessPlot";
+  std :: string fairnessGraphics        = FairnessFile + ".png";
+  std :: string fairnessPlot            = FairnessFile + ".plt";
 
   Gnuplot plot1 (fairnessGraphics);
   plot1.SetTitle (plotTitle1);
   // Make the graphics file, which the plot file will create when it is used with Gnuplot, be a PNG file.
   plot1.SetTerminal ("png");
   plot1.SetLegend ("Packet Size", "Fairness Index");
-  plot1.AppendExtra ("set xrange [40:1500]");
+  plot1.AppendExtra ("set xrange [0:1550]");
   // Instantiate the dataset, set its title, and make the points be plotted along with connecting lines.
   Gnuplot2dDataset fairnessDataset;
   fairnessDataset.SetTitle (dataTitle1);
   fairnessDataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
 
-  std :: string plotTitle2               = "Throughput Vs Packet Size";
-  std :: string dataTitle2               = "Throughput Data";
+  std :: string plotTitle2               = "Plot of throughput against Packetsize";
+  std :: string dataTitle2               = "Throughput";
 
   //.........Throughput Plot Setup..........//
-  std :: string throughputFile           = "wirelessthroughput";
-  std :: string throughputGraphics       = throughputFile + ".png";
-  std :: string throughputPlot           = throughputFile + ".plt";
+  std :: string throughputFile           = "WirelessThroughputPlot";
+  std :: string throughputGraphics       = ThroughputFile + ".png";
+  std :: string throughputPlot           = ThroughputFile + ".plt";
 
   Gnuplot plot2 (throughputGraphics);
   plot2.SetTitle (plotTitle2);
   // Make the graphics file, which the plot file will create when it is used with Gnuplot, be a PNG file.
   plot2.SetTerminal ("png");
   plot2.SetLegend ("Packet Size", "Throughput");
-  plot2.AppendExtra ("set xrange [40:1500]");
+  plot2.AppendExtra ("set xrange [0:1550]");
   // Instantiate the dataset, set its title, and make the points be plotted along with connecting lines.
   Gnuplot2dDataset throughputDataset;
   throughputDataset.SetTitle (dataTitle2);
@@ -147,15 +143,15 @@ int main (int argc, char *argv[])
     Ipv4AddressHelper ipv4;
     Ipv4InterfaceContainer apInterface1,apInterface2,staInterface1,staInterface2;
 
-    ipv4.SetBase ("10.3.1.0", "255.255.255.0");
+    ipv4.SetBase ("10.0.1.0", "255.255.255.0");
     staInterface1 = ipv4.Assign (staDevices1);
     apInterface1 = ipv4.Assign (apDevice1);
 
-    ipv4.SetBase ("10.3.2.0", "255.255.255.0");
+    ipv4.SetBase ("10.0.2.0", "255.255.255.0");
     apInterface2 = ipv4.Assign (apDevice2);
     staInterface2 = ipv4.Assign (staDevices2);
 
-    ipv4.SetBase ("10.3.3.0", "255.255.255.0");
+    ipv4.SetBase ("10.0.3.0", "255.255.255.0");
     Ipv4InterfaceContainer baseinterface = ipv4.Assign (basedevice);
 
     std::cout <<"n0 : " << staInterface1.GetAddress(0) << "\t";
@@ -224,9 +220,9 @@ int main (int argc, char *argv[])
 
   //........Fairness Plot .........//
   // Add the dataset to the plot.
-  plot1.AddDataset (fairnessDataset);
+  plot1.AddDataset (FairnessDataset);
   // Open the plot file.
-  std :: ofstream plotFile1 (fairnessPlot.c_str());
+  std :: ofstream plotFile1 (FairnessPlot.c_str());
   // Write the plot file.
   plot1.GenerateOutput (plotFile1);
   // Close the plot file.
@@ -234,9 +230,9 @@ int main (int argc, char *argv[])
 
   //.........Throughput Plot.........//
   // Add the dataset to the plot.
-  plot2.AddDataset (throughputDataset);
+  plot2.AddDataset (ThroughputDataset);
   // Open the plot file.
-  std :: ofstream plotFile2 (throughputPlot.c_str());
+  std :: ofstream plotFile2 (ThroughputPlot.c_str());
   // Write the plot file.
   plot2.GenerateOutput (plotFile2);
   // Close the plot file.
