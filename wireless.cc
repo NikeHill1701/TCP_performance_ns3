@@ -18,45 +18,42 @@ int main (int argc, char *argv[])
   std :: string plotTitle1               = "Plot of TCP Fairness Index against Packet Size";
   std :: string dataTitle1               = "Index Of Fairness ";
 
-  //.........Fairness Plot Setup ........//
+  //setting up fairness plot
   std :: string fairnessFile            = "WirelessFairnessPlot";
   std :: string fairnessGraphics        = FairnessFile + ".png";
   std :: string fairnessPlot            = FairnessFile + ".plt";
-
+    //graphics file is created by plot file when we run Gnuplotto create the final plot in a PNG file.
   Gnuplot plot1 (fairnessGraphics);
-  plot1.SetTitle (plotTitle1);
-  // Make the graphics file, which the plot file will create when it is used with Gnuplot, be a PNG file.
+  plot1.SetTitle (plotTitle1); 
   plot1.SetTerminal ("png");
   plot1.SetLegend ("Packet Size", "Fairness Index");
   plot1.AppendExtra ("set xrange [0:1550]");
-  // Instantiate the dataset, set its title, and make the points be plotted along with connecting lines.
+  //setting dataset, title of plot, legend and style of plotting.
   Gnuplot2dDataset fairnessDataset;
   fairnessDataset.SetTitle (dataTitle1);
   fairnessDataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
-
+   //setting up the dataset
   std :: string plotTitle2               = "Plot of throughput against Packetsize";
   std :: string dataTitle2               = "Throughput";
 
-  //.........Throughput Plot Setup..........//
+  //setting up Throughput Plot 
   std :: string throughputFile           = "WirelessThroughputPlot";
   std :: string throughputGraphics       = ThroughputFile + ".png";
   std :: string throughputPlot           = ThroughputFile + ".plt";
-
   Gnuplot plot2 (throughputGraphics);
   plot2.SetTitle (plotTitle2);
-  // Make the graphics file, which the plot file will create when it is used with Gnuplot, be a PNG file.
   plot2.SetTerminal ("png");
   plot2.SetLegend ("Packet Size", "Throughput");
   plot2.AppendExtra ("set xrange [0:1550]");
-  // Instantiate the dataset, set its title, and make the points be plotted along with connecting lines.
+    //setting dataset, title of plot, legend and style of plotting. same as the previous graph.
   Gnuplot2dDataset throughputDataset;
   throughputDataset.SetTitle (dataTitle2);
   throughputDataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
-
-  //Packet Size to be sent
+  //------------------plotting part initialisatoin done--------------
+ 
   uint32_t packets[10] = {40,44,48,52,60,552,576,628,1420,1500};
+  //Packet sizes as given in the assignment.
   uint32_t j;
-
   for(j=0;j<10;j++)
   {
     std::cout << "Packet Size : " << packets[j] << std::endl;
@@ -74,11 +71,11 @@ int main (int argc, char *argv[])
     wifiChannel2.SetPropagationDelay ("ns3::ConstantSpeedPropagationDelayModel");
     wifiChannel2.AddPropagationLoss ("ns3::FriisPropagationLossModel", "Frequency", DoubleValue (5e9));
 
-    /* Setup Physical Layer */
+    /* Setup of Physical Layer */
     YansWifiPhyHelper wifiPhy1 = YansWifiPhyHelper::Default ();
     wifiPhy1.SetChannel (wifiChannel1.Create ());
     wifiHelper.SetRemoteStationManager ("ns3::ConstantRateWifiManager","DataMode", StringValue ("HtMcs7"),"ControlMode", StringValue ("HtMcs0"));
-    /* Setup Physical Layer */
+    /* Setup of Physical Layer */
     YansWifiPhyHelper wifiPhy2 = YansWifiPhyHelper::Default ();
     wifiPhy2.SetChannel (wifiChannel2.Create ());
     wifiHelper.SetRemoteStationManager ("ns3::ConstantRateWifiManager","DataMode", StringValue ("HtMcs7"),"ControlMode", StringValue ("HtMcs0"));
@@ -99,10 +96,11 @@ int main (int argc, char *argv[])
     PointToPointHelper p2p;
     p2p.SetChannelAttribute ("Delay", StringValue ("100ms"));
     p2p.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
+    //setting delay and data rate as asked in question
     NetDeviceContainer basedevice = p2p.Install (baseStationNode);
 
     NetDeviceContainer apDevice1,apDevice2,staDevices1,staDevices2;
-    /* Configure AP */
+    /* Configure AccessPoint */
     Ssid ssid = Ssid ("wireless-network");
     apWifiMac.SetType ("ns3::ApWifiMac","Ssid", SsidValue (ssid));
 
@@ -135,7 +133,7 @@ int main (int argc, char *argv[])
     mobility.Install (bs2);
     mobility.Install (n1);
 
-    /* Internet stack */
+    /* Internet stack helper */
     InternetStackHelper stack;
     stack.Install (all);
 
@@ -153,14 +151,14 @@ int main (int argc, char *argv[])
 
     ipv4.SetBase ("10.0.3.0", "255.255.255.0");
     Ipv4InterfaceContainer baseinterface = ipv4.Assign (basedevice);
-
-    std::cout <<"n0 : " << staInterface1.GetAddress(0) << "\t";
-    std::cout <<"bs1 : " << apInterface1.GetAddress(0) << "\t";
-    std::cout <<"bs2 : " << apInterface2.GetAddress(0) << "\t";
-    std::cout <<"n1 : " << staInterface2.GetAddress(0) << std::endl;
+    std::cout <<"Interface Addresses"  <<"\n";
+    std::cout <<"Node0 : " << staInterface1.GetAddress(0) << "\t";
+    std::cout <<"BaseStation1 : " << apInterface1.GetAddress(0) << "\t";
+    std::cout <<"BaseStation2 : " << apInterface2.GetAddress(0) << "\t";
+    std::cout <<"Node1 : " << staInterface2.GetAddress(0) << std::endl;
     std::cout << std::endl;
 
-    /* Populate routing table */
+    /* Populate the routing table */
     Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
     //TCP connection from n0 to n1
@@ -197,28 +195,28 @@ int main (int argc, char *argv[])
       Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);
 
       std::cout << "Flow " << i->first  << " (" << t.sourceAddress << " -> " << t.destinationAddress << ") Source Port :" << t.sourcePort << " Destination Port :" << t.destinationPort << "\n";
-      std::cout << "  Tx Bytes\t\t:" << i->second.txBytes << " bytes \n";
-      std::cout << "  Rx Bytes\t\t:" << i->second.rxBytes << " bytes\n";
+      std::cout << "  Transmitted Bytes\t:" << i->second.txBytes << " bytes \n";
+      std::cout << "  Received Bytes\t:" << i->second.rxBytes << " bytes\n";
       double time = i->second.timeLastRxPacket.GetSeconds() - i->second.timeFirstTxPacket.GetSeconds();
       std::cout << "  Transmission Time\t:" << time << "s\n";
       double throughput = ((i->second.rxBytes * 8.0) / time)/1024;
-      std::cout << "  Throughput\t\t:" << throughput  << " Kbps\n\n";
+      std::cout << "  Throughput observed\t:" << throughput  << " Kbps\n\n";
 
       Sumx += throughput;
       SumSqx += throughput * throughput ;
     }
 
     double FairnessIndex = (Sumx * Sumx)/ (2 * SumSqx) ;
-    std :: cout << "Average Throughput: " << Sumx/2 << " Kbps" << std::endl;
-    std :: cout << " FairnessIndex: " << FairnessIndex << std :: endl << std::endl;
-    std :: cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl << std::endl;
+    std :: cout << "Average Throughput: \t" << Sumx/2 << " Kbps" << std::endl;
+    std :: cout << "FairnessIndex: \t" << FairnessIndex << std :: endl << std::endl;
+    std :: cout << "***********************************************************" << std::endl << std::endl;
     fairnessDataset.Add (packets[j], FairnessIndex);
     throughputDataset.Add(packets[j],Sumx/2);
     Simulator::Destroy ();
-    NS_LOG_INFO ("Done.");
+    NS_LOG_INFO ("Complete");
   }
 
-  //........Fairness Plot .........//
+  //plotting  fairness 
   // Add the dataset to the plot.
   plot1.AddDataset (FairnessDataset);
   // Open the plot file.
@@ -228,7 +226,7 @@ int main (int argc, char *argv[])
   // Close the plot file.
   plotFile1.close ();
 
-  //.........Throughput Plot.........//
+  //plotting throughput
   // Add the dataset to the plot.
   plot2.AddDataset (ThroughputDataset);
   // Open the plot file.
