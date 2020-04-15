@@ -18,37 +18,37 @@ int main (int argc, char *argv[])
   std :: string plotTitle1               = "Plot of TCP Fairness Index against Packet Size";
   std :: string dataTitle1               = "Index Of Fairness ";
 
-  //setting up fairness plot
-  std :: string fairnessFile            = "WirelessFairnessPlot";
-  std :: string fairnessGraphics        = FairnessFile + ".png";
-  std :: string fairnessPlot            = FairnessFile + ".plt";
+  //setting up Fairness plot
+  std :: string FairnessFile            = "WirelessFairnessPlot";
+  std :: string FairnessGraphics        = FairnessFile + ".png";
+  std :: string FairnessPlot            = FairnessFile + ".plt";
     //graphics file is created by plot file when we run Gnuplotto create the final plot in a PNG file.
-  Gnuplot plot1 (fairnessGraphics);
+  Gnuplot plot1 (FairnessGraphics);
   plot1.SetTitle (plotTitle1); 
   plot1.SetTerminal ("png");
   plot1.SetLegend ("Packet Size", "Fairness Index");
   plot1.AppendExtra ("set xrange [0:1550]");
   //setting dataset, title of plot, legend and style of plotting.
-  Gnuplot2dDataset fairnessDataset;
-  fairnessDataset.SetTitle (dataTitle1);
-  fairnessDataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
+  Gnuplot2dDataset FairnessDataset;
+  FairnessDataset.SetTitle (dataTitle1);
+  FairnessDataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
    //setting up the dataset
-  std :: string plotTitle2               = "Plot of throughput against Packetsize";
+  std :: string plotTitle2               = "Plot of Throughput against Packetsize";
   std :: string dataTitle2               = "Throughput";
 
   //setting up Throughput Plot 
-  std :: string throughputFile           = "WirelessThroughputPlot";
-  std :: string throughputGraphics       = ThroughputFile + ".png";
-  std :: string throughputPlot           = ThroughputFile + ".plt";
-  Gnuplot plot2 (throughputGraphics);
+  std :: string ThroughputFile           = "WirelessThroughputPlot";
+  std :: string ThroughputGraphics       = ThroughputFile + ".png";
+  std :: string ThroughputPlot           = ThroughputFile + ".plt";
+  Gnuplot plot2 (ThroughputGraphics);
   plot2.SetTitle (plotTitle2);
   plot2.SetTerminal ("png");
   plot2.SetLegend ("Packet Size", "Throughput");
   plot2.AppendExtra ("set xrange [0:1550]");
     //setting dataset, title of plot, legend and style of plotting. same as the previous graph.
-  Gnuplot2dDataset throughputDataset;
-  throughputDataset.SetTitle (dataTitle2);
-  throughputDataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
+  Gnuplot2dDataset ThroughputDataset;
+  ThroughputDataset.SetTitle (dataTitle2);
+  ThroughputDataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
   //------------------plotting part initialisatoin done--------------
  
   uint32_t packets[10] = {40,44,48,52,60,552,576,628,1420,1500};
@@ -185,7 +185,7 @@ int main (int argc, char *argv[])
     Simulator::Stop (Seconds(11.0));
     Simulator::Run ();
 
-    //Fairness Index and throughput calculation
+    //Fairness Index and Throughput calculation
     double Sumx = 0, SumSqx = 0;
     monitor->CheckForLostPackets ();
     Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmonitor.GetClassifier ());
@@ -199,24 +199,24 @@ int main (int argc, char *argv[])
       std::cout << "  Received Bytes\t:" << i->second.rxBytes << " bytes\n";
       double time = i->second.timeLastRxPacket.GetSeconds() - i->second.timeFirstTxPacket.GetSeconds();
       std::cout << "  Transmission Time\t:" << time << "s\n";
-      double throughput = ((i->second.rxBytes * 8.0) / time)/1024;
-      std::cout << "  Throughput observed\t:" << throughput  << " Kbps\n\n";
+      double Throughput = ((i->second.rxBytes * 8.0) / time)/1024;
+      std::cout << "  Throughput observed\t:" << Throughput  << " Kbps\n\n";
 
-      Sumx += throughput;
-      SumSqx += throughput * throughput ;
+      Sumx += Throughput;
+      SumSqx += Throughput * Throughput ;
     }
 
     double FairnessIndex = (Sumx * Sumx)/ (2 * SumSqx) ;
     std :: cout << "Average Throughput: \t" << Sumx/2 << " Kbps" << std::endl;
     std :: cout << "FairnessIndex: \t" << FairnessIndex << std :: endl << std::endl;
     std :: cout << "***********************************************************" << std::endl << std::endl;
-    fairnessDataset.Add (packets[j], FairnessIndex);
-    throughputDataset.Add(packets[j],Sumx/2);
+    FairnessDataset.Add (packets[j], FairnessIndex);
+    ThroughputDataset.Add(packets[j],Sumx/2);
     Simulator::Destroy ();
     NS_LOG_INFO ("Complete");
   }
 
-  //plotting  fairness 
+  //plotting  Fairness 
   // Add the dataset to the plot.
   plot1.AddDataset (FairnessDataset);
   // Open the plot file.
@@ -226,7 +226,7 @@ int main (int argc, char *argv[])
   // Close the plot file.
   plotFile1.close ();
 
-  //plotting throughput
+  //plotting Throughput
   // Add the dataset to the plot.
   plot2.AddDataset (ThroughputDataset);
   // Open the plot file.
